@@ -1,0 +1,335 @@
+
+Acessar o site:
+
+Fazer o download da versao AMD64 bits, como exemplo:
+https://developer.hashicorp.com/terraform/downloads?product_intent=terraform
+AMD64
+Version: 1.3.7
+
+Instalar o plugin Terraform no VSCode
+HashiCorp Terraform
+HashiCorp
+
+Criando o arquivo main.tf
+
+Entrar no registry.terraform.io:
+https://registry.terraform.io/
+
+Repositorio de Plugins do Terraform, providers: Azure, Kubernetes, GCP (principais cloud provider)
+
+Baixar o plugin da Digital Ocean:
+https://registry.terraform.io/providers/digitalocean/digitalocean/latest
+
+Setup Inicial - Terraform 0.13+
+-----------------------------------------------------
+https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs
+
+terraform {
+  required_providers {
+    digitalocean = {
+      source = "digitalocean/digitalocean"
+      version = "~> 2.0"
+    }
+  }
+}
+
+# Set the variable value in *.tfvars file
+# or using -var="do_token=..." CLI option
+variable "do_token" {}
+
+# Configure the DigitalOcean Provider
+provider "digitalocean" {
+  token = var.do_token
+}
+
+# Create a web server
+resource "digitalocean_droplet" "web" {
+  # ...
+}
+-----------------------------------------------------
+
+Configurando o token da Digital Ocean no Terraform main.tf:
+
+Acessar o site da Digital Ocean, acessar o Painel com os projetos
+
+Entrar > API
+
+Gerar um token para uso no Applications & API, clicando
+
+[ Generate New Token ]
+
+Token name: aula
+Expiração: 30 dias
+
+Clicar em > [ Generate Token ]
+
+Fazer a copia, colar no main.tf na configuração:
+
+# Configure the DigitalOcean Provider
+provider "digitalocean" {
+  token = [COLOCAR AQUI O TOKEN]
+}
+
+Agora precisamos executar o comando de inicialização do Terraform:
+
+terraform init
+
+. Baixa os providers
+
+A partir dai começamos gerar a infra-estrutra
+
+Agora, temos adicionar os recursos:
+
+Adicionar o Droplet:
+Máquina virtual do Jenkins
+.Procurar na documentação no registry.terrafor Digital Ocean Documentation:
+https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs
+
+droplet:
+------------------------------------------------------------------
+# Create a new Web Droplet in the nyc2 region
+resource "digitalocean_droplet" "jenkins" {
+  image  = "ubuntu-22-04-x64"
+  name   = "jenkins"
+  region = "nyc1"
+  size   = "s-2vcpu-2gb"
+}
+--------------------------------------------------------------------
+
+Executando o comando terraform apply, e apresentado logo depois o plano
+de ação. É importante analisar bem as informações apresentadas:
+
+$ terraform apply
+
+Caso as informações apresentadas estiverem ok, aceitar com yes apresentado abaixo:
+
+Enter a value: yes
+
+Verificando:
+Acessar o projeto no site da Digital Ocean e verificar que o droplet (máquina virtual)
+do jenkins está sendo provisionada e criada.
+
+Também podemos observer o retorno na ferramenta CLI, Terraform.exe:
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Criamos o Droplet utilizando código, também cria o arquivo terraform.tfstate, com 
+o estado com todas informações relacionadas ao projeto.
+
+Como exemplo podemos alterar o resource "digitalocean_droplet" de "jenkins"
+para "jenkins vm" e executar o comando terraform apply novamente:
+
+$ terraform apply
+
+Apresenta o que vai ser feito:
+
+Plan: 0 to add, 1 to change, 0 to destroyed
+
+Podemos confirmar com yes:
+
+Enter a value: yes
+
+Caso alteramos a região por exemplo o downtime é alto, devemos considerar
+com muito cuidado pois o tempo pode ser um problema.
+
+Agora preciso criar um bloco Datasource para vincular a chave SSH criada
+anteriormente:
+
+Pesquisar na documentação por: SSH
+https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/data-sources/ssh_key
+
+-----------------------------------------------------------------
+# Create a new Web Droplet in the nyc2 region
+resource "digitalocean_droplet" "jenkins" {
+  image  = "ubuntu-22-04-x64"
+  name   = "jenkins"
+  region = "nyc1"
+  size   = "s-2vcpu-2gb"
+  ssh_keys = [data.digitalocean_ssh_key.jornada.id]
+}
+
+data "digitalocean_ssh_key" "jornada" {
+  name = "Jornada"
+}
+------------------------------------------------------------
+
+Aplicamos então: terraform apply
+
+Para verificar, pegamos o IP publico fornecido novamente para teste:
+
+$ ssy -i /c/Users/limeira/.ssh/terraform root@165.22.176.44
+
+Confirmar com yes, e digitar o passphrase. A partir dai tenho acesso
+via SSH da Droplet (Máquina Virtual) criada.
+
+
+AGORA PRECISAMOS ADICIONAR O CLUSTER Kubernetes
+
+Pesquisamos no site pela documentação DIGITALOCEAN DOCUMENTATION:
+
+kubernetes cluster 
+https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/kubernetes_cluster
+
+----------------------------------------------------------------------
+# DEFININDO O CLUSTER KUBERNETES
+resource "digitalocean_kubernetes_cluster" "k8s" {
+  name   = "k8s"
+  region = "nyc1"
+  # Grab the latest version slug from `doctl kubernetes options versions`
+  version = "1.24.4-do.0"
+
+  node_pool {
+    name       = "worker-pool"
+    size       = "s-2vcpu-2gb"
+    node_count = 2
+
+  }
+}
+----------------------------------------------------------------------
+
+Comandos adicionais do Terraform:
+
+# Realizando a formatação do arquivo de configuração main.tf pelo comando - formato HCL:
+$ terraform fmt 
+
+# Exibindo o plano de execução somente, sem realizar uma ação efetiva:
+$ terraform plan
+
+Podemos então executar com o comando:
+$ terraform apply
+
+Confirmamos com yes, o plano apresentado.
+
+A partir desse momento, podemos observar que é gerado um outro arquivo:
+. este arquivo contém o backup do estado anterior
+
+terraform.tfstate.backup
+
+Contudo, da forma como foi feito com a definição da chave no próprio arquivo
+e sem parametrizações, fica inviável a portabilidade.
+
+Então podemos parametrizar com variable:
+
+------------------------------------------------------------------------
+variable "region" {
+    default = "nyc1"
+}
+variable "token" {
+    default = ""
+}
+variable "ssh_key_name" {
+    default = "Jornada"
+}
+------------------------------------------------------------------------
+
+Devemos então alterar o main.tf, subistituindo region por exemplo para 
+utilizar var.region:
+
+region = var.region
+
+
+Também devemos criar o arquivo terraform.tfvars, configurando os valores:
+Exemplo:
+-----------------------------------------------------------------
+do_token = "colocar o token gerando no site da digital ocean"
+ssh_key_name = "Jornada"
+region = "nyc1"
+-----------------------------------------------------------------
+
+Após a alteração com a substituição de todos os valores:
+do_token, ssh_key_name e region para utilização das variáveis.
+Executamos novamente o comando para formatação do arquivo do formato HCL:
+
+$ terraform fmt
+
+Depois aplicamos as alterações no cloud da Digital Ocean:
+
+$ terraform apply
+
+PODEMOS MELHORAR AINDA MAIS, CRIANDO O OUTPUT PARA CAPTURAR AS informações
+DO PORTAL WEB DA DIGIALOCEAN:
+. Verificar a documentação do digial_ocean_droplet
+https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet
+
+-----------------------------------------------------------------
+output "jenkins_ip" {
+    value = digitalocean_droplet.jenkins.ipv4_address
+}
+-----------------------------------------------------------------
+
+Podemos então aplicar as alterações no arquivo main.tf realizadas com
+o comando:
+
+$ terraform apply
+
+Confirmamos com yes.
+
+
+Agora queremos carregar um arquivo na configuração:
+
+# PRESQUISAR NA DOCUMENTAÇÃO LOCAL_FILE
+
+Alterar no main.tf de configuração
+
+resource "local_file" "foo" {
+    content = digitalocean_kubernetes_cluster.k8s.kube_config.0.raw_config
+    filename = "kube_config.yaml"
+}
+
+Como adicionamos um novo recurso, devemos executar o comando terraform init
+novamente:
+
+$ terraform init
+
+Depois executamos o terraform apply:
+
+$ terraform apply
+
+Confirmamos a alteração - Enter a value: yes
+
+
+Podemos então atualizar o .kube/config com a nova versão que foi feito O
+download com a nova configuração:
+
+$ cp ./kube_config.yaml /c/Users/limeira/.kube/config
+
+
+Podemos então verificar os nós:
+
+$ kubectl get nodes
+
+Apresenta os nós do cluster kubernetes funcionando na Digital Ocean 
+
+
+ISTO É IMPORTANTE, depois de realizarmos os testes não podemos deixar
+o cluster ligado nem tão pouco o Droplet do jenkins. 
+REFORÇANDO, devemos executar o seguinte comando para destruir os 
+recursos alocados para o teste:
+
+$ terraform destroy
+
+Confirmamos - Enter a value: yes
+
+O Terraform também tem outros recursos, como:
+
+módulos
+workspaces: vários ambiente com o mesmo projeto,
+armazenamento remoto de estado do projeto (trabalho de forma colaborativa)
+
+Devemos ponderar o uso dos recursos, para uma maior eficiência e 
+não ficarmos travados.
+
+Devemos focar agora na AUTOMAÇÃO DE PROCESSOS.
+
+Olá, comecei a Jornada DEVOPS DE ELITE, nas atividades desse
+Badge vi tudo sobre a cultura DevOps seus pilares e benefícios de sua
+implementação. Containers/virtualização, diferença 
+entre imagem e container. Preparação de uma imagem e execução no container Docker.
+
+
+Olá,
+Nessa etapa vi na prática como o fluxo DevOps funciona,
+sua arquitetura. Criação de um cluster Kubernetes e executar
+o deploy da aplicação.
+
+Olá, 

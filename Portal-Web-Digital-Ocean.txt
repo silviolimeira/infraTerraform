@@ -1,0 +1,389 @@
+
+1) Erro: Querer aprender tudo de uma vez.
+
+Ferramentas: Jenkis, Github Actions, GetLab CI/CD (Construir Pipeline CI/CD)
+
+Provedores de cloud: AWS, GCP, Digital Ocean
+
+Como funciona o Fluxo devops, quais as ferramentas mais utilizadas em cada fase do fluxo.
+Os conceitos e fundamentos por traz dessas ferramentas. Como elas resolvem os problemas a 
+que elas se destinam
+
+
+
+2) Erro: Exercitando processos isoladamente.
+
+Focar na integração das ferramentas, saber conecta-las.
+
+
+Investir de Cloud.
+
+
+
+3) Erro: Hard skills, focar também nas soft skills.
+
+Características comportamentais:
+Relação interpessoal, equipes e clientes
+Habilidades sociais.
+
+Saber lidar com as demandas no dia-a-dia.
+
+
+
+4) Esperar opoutunidade cair no colo, esperar que a empresa invista na sua capacitação.
+
+Não esperar um projeto da empresa para aprendizado.
+
+A carreira é minha (Ter incentivo da empresa é bom, mas não ficar esperando um projeto para
+aprender depois)
+
+Qual caminho, Quais ferramentas.
+
+Antecipação, fazer a oportunidade acontecer.
+
+
+
+Não saber se posicionar no mercado de devops
+
+Esperam: Agentes de transformação:
+Melhorar os projetos:
+. Difundindo a cultura colaborativa
+. Otimizando os Processos
+. Entregando solulões cada vez mais inovadoras, performaticas e confiáveis.
+
+
+Conceito de Infra-estrutura como codígo ou INFRAS-CODE
+
+Qual a importância na cultura devops
+
+Automação e Simplificação da Infra-estrutura
+
+
+Terraform:
+
+. Provisionamento de Infra-estrutura.
+. Criação de elementos na nuvem.
+
+
+
+Criar uma infra-estrutura no ambiente de nuvem:
+.Utilização do terminal web. (Painel da AWS, Painel da Azure, da Google ...)
+
+. Criação da máquina virtual.
+. Criação dos elementos de rede.
+. Sub-redes.
+. Cluster Kubernetes
+. Repositório de containers
+
+
+Utilização do terminal web utilizando a interface do Cloud provider.
+. Preenchimento dos campos.
+
+Não focar no terminal web, pois é difícil de replicar. (somente como aprendizado)
+Também é difícil documentar, tirar todos os prints das telas e seus preenchimento correto.
+
+Também não é possível automatizar o processo utilizando o terminal web do provedor.
+
+
+Outra opção é utilização de comandos utilizando ferramentas como Azure CLI, AWS CLI, GCP CLI
+. temos a opção de então criar um shell script.
+. reprodução e distribuição facilitada.
+. também é possível automatizar.
+
+. Se preocupar com a ordem de criação dos elementos.
+
+Por exemplo: Criar a sub-rede antes da máquina virtual.
+. verificação da existência de elementos.
+. Também são utilizadas linguagens de programação.
+
+Azure SDK, AWS SDK, e GCP SDK - para interação com cloud providers
+
+Trabalham na forma interativa, (vários verificações)
+
+
+Terraform:
+. declara toda a infra-estrutura
+. colocar no código os desejos para ter no cloud provider
+
+A Ferramenta Terraform - cria a infra-estrutura de acordo com a especificação.
+
+Infra-estrutura como código.
+
+Terraform trabalha de forma declarativa, as próprias declarações se tornam a documentação
+e fácil redistribuir.
+
+É a ferramenta mais utilizada, e é multi cloud. Podemos utilizar AWS, Azure, GCP
+
+Conceito de Provider (Plugin, gera comunicação com cada cloud provider)
+Provisionar a infra-estrutura.
+
+Subir banco de dados na AWS, criar uma máquina virtual na Azure.
+
+Terraform vs Ansible
+
+São ferramentas complementares, não competem entre si.
+
+
+Terraform
+
+Provisionamento de Infraestrutura
+. Declara os elementos da Infraestrutura
+. Está relacionado a criação de recursos.
+
+
+Ansible
+
+Gerenciamento de configuração
+. Configura os elementos da Infraestrutura
+. Está relacionado a configuração de recursos.
+
+
+Terraform, utiliza uma linguagem:
+
+Hashicorp Configuration Language
+
+Estrutura:
+<BLOCK TYPE> "<BLOCK LABEL>" "<BLOCK LABEL>" {
+   <IDENTIFIER> = <EXPRESION>
+}
+
+BLOCK LABEL, nomeações e sub-tipos do BLOCK TYPE
+
+IDENTIFIER, EXPRESSOES (especificar parâmetros)
+
+
+Tipos de Blocos
+
+Resources (Representa um recurso criado no Terraform)
+
+resource "digitalocean_droplet" "maquina_labs_tf" {
+    image = "ubuntu-20-04-x64"
+    name = "maquina-labs-tf"
+    region = "nyc1"
+    size = "s-1vcpu-2gb"
+}
+
+= O droplet representa uma máquina virtual
+
+
+Em seguida temos o Data Sources
+
+data "digitalocean_ssh_key" "minha_chave" {
+    name = "aula"
+}
+
+Pode ser um elemento de rede, uma chave de ssh.
+Temos que ter alguns dados desse recurso.
+
+
+
+Providers:
+
+provider = "digitalocean" {
+    token = ""
+}
+
+
+Terraform Settings:
+
+terraform {
+    required_version = ">1.0"
+    required_providers {
+        digitalocean = {
+            source = "digitalocean/digitalocean"
+            version = "2.16.0"
+        }
+    }
+}
+
+
+Variables:
+
+variable "regiao" {
+    type = string
+    default = "nyc1"
+    description = "Região de uso na Digital Ocean"
+}
+
+Reaproveitamento, 
+Custizável
+
+
+Outputs
+
+output "droplet_ip" {
+    value = digitalocean_droplet.maquina_labs_if.ipv4_address
+}
+
+
+
+Criação de um cluster Kubernetes na DigialOcean
+Máquina virtual para isntalação do Jenkins (Ferramenta de CI/CD).
+
+Setup, integração contínua, toda entrega
+
+
+Digital Ocean, muito mais barato
+
+https://www.digitalocean.com/pricing
+
+Criando a chave:
+
+$ ssh-keygen -t rsa -b 2048
+
+Enter file in which to save the key (...): 
+C:\Users\limeira\.ssh\terraform
+
+Vai pedir senha e confirmação.
+
+Vai ser necessário registrar a chave pública na Digital Ocean:
+
+$ cat /c/Users/limeira/.ssh/terraform.pub
+
+Acessar Settings > Security [Add SSH key] no site da Digital Ocean
+Colar a chave no campo SSH key content, definir o nome e clicar em Add SSH key
+
+
+Devemos criar a máquina virtual e o cluster kubernetes.
+
+Começar com o cluster kubernetes:
+site digital ocean > Kubernetes [ Create] Kubernetes 
+
+1) Coisa escolher a região (em qual datacenter va ficar)
+. Selecionar nyc1
+
+2) Escolher a versão do Kubernetes
+. 1.24.4.do.0 = Recommended
+
+3) Escolher o Node pool name: (Configuração de máquina para utilização)
+. Podemos ter vários Node pools, para várias configurações de máquina (ou seja 1 máquina para cada Node pool)
+
+Node pool Name: default
+Machine Type (Droplet) : Basic nodes
+Node plan: 2.5 GB RAM usabel (4 GB Total) / 2 vCPUs
+Nodes: 2
+
+4) Definir um nome mais amigável:
+k8s-jornada
+
+Selecionar o projeto:
+
+[ Criar o Cluster ]
+
+
+
+Criar o Droplet para o Jenkins (máquina virtual utilizada para o Jenkins)
+
+Site Digital Ocean > Droplets [ Criar Droplet ]
+
+Chose Region: NYC1 
+
+OS: Ubuntu - Versão: 22.04
+
+Choose Size: SHARED CPU - Basic (Current selected)
+
+CPU Options: Regular with SSD
+
+2 GB / 1 CPU
+50 GB SSD
+2 TB
+
+Choose Authentication Method 
+
+SSH key: selecionar o ssh.pub criada
+
+Quantity: 1 Droplet
+
+Hostname: jenkins 
+
+Clicar [ Create Droplet ]
+
+
+Acessar no site da Digital Ocean, o Droplets
+
+Testar o IP publico da máquina virtual jenkins
+
+ssh -i /c/Users/limeria/.ssh/terraform root@142.93.10.196
+
+Responser com yes
+
+Digitar a senha
+
+
+Para acessar o Kubernets, devemos voltar pois o acesso é diferente.
+Selecionamos então Kubernetes
+
+Selecionamos: k8s-jornada
+
+Fazer o [ Download Config File ] através do botão
+
+Acessar o arquivo, copiar todas as informações. Atualizar então o arquivo
+C:\Users\limeira\.kube\config
+
+Apagar o conteúdo original e copiar a configuração do cluster Kubernetes do arquivo que
+foi realizado o download.
+
+Podemos então executar o comando kubectl:
+
+$ kubectl get nodes
+
+Podemos então verificar que temos dois Pods fornecidos pelo provedor Digital Ocean, que foram 
+criados recentemente no portal web.
+
+Podemos aplicar o aquivo de manifesto criado na aula-2: deployment.yaml, do projeto kube-news
+com o comando:
+
+$ kubectl apply -f ./deployment.yaml
+
+Para verificar com o comando:
+
+$ kubectl get Pods
+
+Então verificamos também os services:
+
+$ kubectl get services
+
+Lembrando, isto é muito importante para poder acessar o Pod no cloud da Digital Ocean
+
+mudar a configuração do maifesto deployment.yaml para o type: LoadBalancer
+também retirar a confguração do nodePort: 30000
+
+Dessa forma podemos acessar utilizando o ip externo.
+
+Atualizamos com o comando:
+
+$ kubectl apply -f ./deployment.yaml
+
+fazemos a verificação com o comando:
+
+$ kubctl get all
+
+Observar o EXTERNAL-IP, demora para criar no cloud provider Digital Ocean
+
+service/web LoadBalancer ex: EXTERNAL-IP: 146.190.196.165
+
+MUITO IMPORTANTE, lembrar de destruri tudo depois dos testes.
+Pois se deixarmos aberto, executando a Digital Ocean vai cobrar esse tempo.
+
+
+Site da Digital Ocean > Kubernets > [ Actions ] > Destroy
+
+Clicar em Destroy all
+
+Confirmar o nome e clicar em [ Destroy ]
+
+
+Acessar o projeto novamente, destruir os Droplets, principalmente o da máquina 
+virtual Jenkins.
+
+Clicar: [ ... ] > Destroy > [ Destrou Droplet ]
+
+Confirmar o nome > clicar em [ Destroy ]
+
+Com isso temos a garantia, que não haverá cobrança depois disso.
+MUITO IMPORTANTE, você não vai querer gastar um dinheiro que não tem.
+
+Tudo isso foi feito pelo Terminal Web. Mas agora vamos utilizar o Terraform.
+
+
+
